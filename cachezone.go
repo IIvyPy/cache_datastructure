@@ -32,13 +32,13 @@ type ZoneTreesOperator interface {
 
 type cacheZoneTrees struct {
 	mu sync.RWMutex
-	m  map[string]*ZoneTree
+	m  map[string]*zoneTree
 }
 
 func NewZoneTree() ZoneTreesOperator {
 	return &cacheZoneTrees{
 		mu: sync.RWMutex{},
-		m:  make(map[string]*ZoneTree),
+		m:  make(map[string]*zoneTree),
 	}
 }
 
@@ -46,7 +46,7 @@ func (s *cacheZoneTrees) Create(name string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.m[name] = NewZTree()
+	s.m[name] = newZTree()
 }
 
 func (s *cacheZoneTrees) Delete(name string) {
@@ -60,7 +60,7 @@ func (s *cacheZoneTrees) CreateWithZones(name string, zones []string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.m[name] = NewZTree()
+	s.m[name] = newZTree()
 	s.m[name].InsertWithSlice(zones)
 }
 
@@ -69,7 +69,7 @@ func (s *cacheZoneTrees) UpdateZones(name string, zones []string) bool {
 		return false
 	}
 
-	newTree := NewZTree()
+	newTree := newZTree()
 	newTree.InsertWithSlice(zones)
 
 	s.mu.Lock()

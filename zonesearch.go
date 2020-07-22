@@ -2,19 +2,19 @@ package fwcache
 
 import "strings"
 
-type ZoneTree struct {
-	next   map[string]*ZoneTree
+type zoneTree struct {
+	next   map[string]*zoneTree
 	isMark bool
 }
 
-func NewZTree() *ZoneTree {
-	root := new(ZoneTree)
+func newZTree() *zoneTree {
+	root := new(zoneTree)
 	root.isMark = false
-	root.next = make(map[string]*ZoneTree)
+	root.next = make(map[string]*zoneTree)
 	return root
 }
 
-func (z *ZoneTree) Insert(zone string) {
+func (z *zoneTree) Insert(zone string) {
 	if zone == "." || zone == "*." {
 		z.isMark = true
 		return
@@ -24,12 +24,12 @@ func (z *ZoneTree) Insert(zone string) {
 		// zTree 的 末尾是"*"时，这里需要将其标志为true
 		if zoneList[i] == "*" {
 			z.isMark = true
-			z.next["*"] = new(ZoneTree)
+			z.next["*"] = new(zoneTree)
 			break
 		}else{
 			if z.next[zoneList[i]] == nil {
-				node := new(ZoneTree)
-				node.next = make(map[string]*ZoneTree)
+				node := new(zoneTree)
+				node.next = make(map[string]*zoneTree)
 				node.isMark = false
 				z.next[zoneList[i]] = node
 			}
@@ -39,13 +39,13 @@ func (z *ZoneTree) Insert(zone string) {
 	z.isMark = true
 }
 
-func (z *ZoneTree) InsertWithSlice(zones []string) {
+func (z *zoneTree) InsertWithSlice(zones []string) {
 	for _, zone := range zones {
 		z.Insert(zone)
 	}
 }
 
-func (z *ZoneTree) Search(domain string) bool {
+func (z *zoneTree) Search(domain string) bool {
 	if z.isMark {
 		return true
 	}
