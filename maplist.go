@@ -24,8 +24,8 @@ func newMapList() *MapList {
 }
 
 func (mapList *MapList) init() {
-	mapList.RLock()
-	defer mapList.RUnlock()
+	mapList.Lock()
+	defer mapList.Unlock()
 
 	mapList.linkedList = list.New()
 	mapList.myMap = make(map[uint64]interface{})

@@ -99,3 +99,15 @@ func (c *cachePolicy) CacheLen() int {
 
 	return len(c.m)
 }
+
+func (c *cachePolicy) Purge(name string) bool{
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if !c.IsExist(name){
+		return false
+	}
+
+	c.m[name].init()
+	return true
+}

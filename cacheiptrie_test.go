@@ -6,7 +6,7 @@ import (
 )
 
 func TestIPTrie(t *testing.T) {
-	ipTree := newCacheIPPrefixTrie()
+	ipTree := NewCacheIPPrefixTrie()
 	ipTree.Create("source")
 	ipTree.InsertIPs("source", "", []string{"123.2.3.4", "234.2.3.2/24", "1.1.1.1"})
 
