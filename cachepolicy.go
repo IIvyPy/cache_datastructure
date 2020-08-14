@@ -23,6 +23,7 @@ type PolicyOperator interface {
 
 	CacheLen() int
 
+	// Purge is used to clear the policy of the given name
 	Purge(name string) bool
 }
 
