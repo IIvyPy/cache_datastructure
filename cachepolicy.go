@@ -104,12 +104,12 @@ func (c *cachePolicy) CacheLen() int {
 }
 
 func (c *cachePolicy) Purge(name string) bool{
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
 	if !c.IsExist(name){
 		return false
 	}
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	c.m[name].init()
 	return true
