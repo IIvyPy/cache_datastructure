@@ -22,6 +22,8 @@ type PolicyOperator interface {
 	GetPolicyForMatch(name string) *MapList
 
 	CacheLen() int
+
+	Purge(name string) bool
 }
 
 type cachePolicy struct {
