@@ -62,17 +62,29 @@ func (c *cachePolicy) IsExist(name string) bool {
 }
 
 func (c *cachePolicy) InsertPolicy(name string, id uint64, policy ItemInterface) {
+	ok := c.m[name].hasKey(id)
+
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.m[name].add(id, policy)
+	if ok{
+		c.m[name].update(id, policy)
+	}else{
+		c.m[name].add(id, policy)
+	}
 }
 
 func (c *cachePolicy) PushBackPolicy(name string, id uint64, policy ItemInterface) {
+	ok := c.m[name].hasKey(id)
+
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.m[name].pushBack(id, policy)
+	if ok{
+		c.m[name].update(id, policy)
+	}else{
+		c.m[name].pushBack(id, policy)
+	}
 }
 
 func (c *cachePolicy) DeletePolicy(name string, id uint64) {
