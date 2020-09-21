@@ -60,12 +60,20 @@ func (mapList *MapList) update(id uint64, item interface{}) bool {
 		return isOk
 	}
 
+	var element *list.Element
 	prev := value.(*list.Element).Prev()
+	next := value.(*list.Element).Next()
 
 	// 删掉当前节点
 	mapList.linkedList.Remove(value.(*list.Element))
 	// 将需要更新的节点插入进去
-	element := mapList.linkedList.InsertAfter(item, prev)
+	if prev != nil{
+		element = mapList.linkedList.InsertAfter(item, prev)
+	}else if next != nil{
+		element = mapList.linkedList.InsertBefore(item, next)
+	}else{
+		element = mapList.linkedList.PushBack(item)
+	}
 	mapList.myMap[id] = element
 	return true
 }
