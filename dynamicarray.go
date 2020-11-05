@@ -5,11 +5,11 @@ import "errors"
 type DynamicArray struct {
 	logicalSize uint16
 	capacity    uint16
-	container   [][]interface{}
+	container   []interface{}
 }
 
 func (s *DynamicArray) SetSize(length uint16) {
-	newContainer := make([][]interface{}, length)
+	newContainer := make([]interface{}, length)
 	copy(newContainer, s.container)
 	s.capacity = length
 	s.container = newContainer
@@ -54,7 +54,7 @@ func (s *DynamicArray) resize(newLogicalSize uint16) {
 
 // Get retrieves the value store at the given index
 // in dynamic array. Throws an error if index out of range.
-func (s *DynamicArray) Get(index uint16) ([]interface{}, error) {
+func (s *DynamicArray) Get(index uint16) (interface{}, error) {
 	if index < s.logicalSize {
 		return s.container[index], nil
 	}
@@ -63,7 +63,7 @@ func (s *DynamicArray) Get(index uint16) ([]interface{}, error) {
 
 // Range retrieves a dynamic store slice with the provided
 // edges. Throws an error if index out of range.
-func (s *DynamicArray) Range(start uint16, stop uint16) ([][]interface{}, error) {
+func (s *DynamicArray) Range(start uint16, stop uint16) ([]interface{}, error) {
 	if start >= 0 && stop < s.logicalSize {
 		return s.container[start:stop], nil
 	}
@@ -82,23 +82,6 @@ func (s *DynamicArray) Set(index uint16, elem []interface{}) {
 	newLogicalSize := s.logicalSize
 	s.resize(newLogicalSize)
 	s.container[index] = elem
-	return
-}
-
-func (s *DynamicArray) AppendVal(index uint16, node interface{}){
-	if index >= 0 && index < s.logicalSize{
-		if len(s.container[index]) == 0{
-			s.container[index] = []interface{}{node}
-		}else{
-			s.container[index] = append(s.container[index], node)
-		}
-		return
-	}
-
-	s.logicalSize = index + 1
-	newLogicalSize := s.logicalSize
-	s.resize(newLogicalSize)
-	s.container[index] = []interface{}{node}
 	return
 }
 
