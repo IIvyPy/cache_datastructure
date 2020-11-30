@@ -74,7 +74,7 @@ func (s *DynamicArray) Delete(index uint16) error{
 // Range retrieves a dynamic store slice with the provided
 // edges. Throws an error if index out of range.
 func (s *DynamicArray) Range(start uint16, stop uint16) ([]interface{}, error) {
-	if start >= 0 && stop < s.logicalSize {
+	if stop <= s.logicalSize {
 		return s.container[start:stop], nil
 	}
 	return nil, errors.New("index out of range")
@@ -83,7 +83,7 @@ func (s *DynamicArray) Range(start uint16, stop uint16) ([]interface{}, error) {
 // Insert inserts a value in the array at the index pos
 // (0 indexed). Resizes the array when needed.
 func (s *DynamicArray) Set(index uint16, elem interface{}) {
-	if index >= 0 && index < s.logicalSize{
+	if index < s.logicalSize{
 		s.container[index] = elem
 		return
 	}
