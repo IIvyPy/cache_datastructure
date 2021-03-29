@@ -1,31 +1,17 @@
 package fwcache
 
 import (
-	"github.com/stretchr/testify/assert"
+	"fmt"
+	"github.com/infobloxopen/go-trees/domain"
+	"github.com/infobloxopen/go-trees/domaintree"
 	"testing"
 )
 
 func TestZoneSearch(t *testing.T) {
-	zone := newZTree()
-	zone.InsertWithSlice([]string{"www.sina.com", "*.zte.com", "baidu.com"})
-	isMatch := zone.Search("wwww.baidu.com")
-	assert.Equal(t, false, isMatch)
-
-	isMatch = zone.Search("baidu.com")
-	assert.Equal(t, true, isMatch)
-
-	isMatch = zone.Search("zte.com")
-	assert.Equal(t, true, isMatch)
-
-	isMatch = zone.Search("www.zte.com")
-	assert.Equal(t, true, isMatch)
-
-	isMatch = zone.Search("abc.www.zte.com")
-	assert.Equal(t, true, isMatch)
-
-	isMatch = zone.Search("abc.www.sina.com")
-	assert.Equal(t, false, isMatch)
-
-	isMatch = zone.Search("com")
-	assert.Equal(t, false, isMatch)
+	zone := new(domaintree.Node)
+	name, _ := domain.MakeNameFromString(".")
+	zone.InplaceInsert(name, true)
+	name1, _ := domain.MakeNameFromString("www.baidu.com")
+	_, isMatch := zone.Get(name1)
+	fmt.Println("isMatch: ", isMatch)
 }

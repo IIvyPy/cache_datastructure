@@ -1,10 +1,14 @@
 package fwcache
 
-import "sync"
+import (
+	"github.com/infobloxopen/go-trees/domaintree"
+	"github.com/orcaman/concurrent-map"
+)
+
+var none = struct{}{}
 
 // ZoneTreesOperator is a type for zone/qname match, which is a map inner zTree-type.
 type ZoneTreesOperator interface {
-
 	// return the zoneTrees-length in memory
 	CacheLen() int
 
@@ -20,96 +24,122 @@ type ZoneTreesOperator interface {
 	// update an exist zone-tree
 	UpdateZones(name string, zones []string) bool
 
-	// insert slice of zones to an exist zone-tree
-	InsertZones(name string, zones []string) bool
-
 	// search if domain exist in the zone-tree
-	IsDomainExist(name string, domain string) bool
+	IsDomainExist(name, domain string) (interface{}, bool)
 
-	// check if the zone-tree with given name is exist.
+	// IsExist if the name of zone-tree exist
 	IsExist(name string) bool
+
+	// insert an zone with value to an exist zone-tree
+	InsertZoneWithValue(name string, value *DomainContent) bool
+
+	// delete an zone with an exist zone-tree
+	DeleteZone(name string, domain string) bool
 }
 
-type cacheZoneTrees struct {
-	mu sync.RWMutex
-	m  map[string]*zoneTree
+type cacheZoneTrees struct{
+	m cmap.ConcurrentMap
 }
 
-func NewZoneTree() ZoneTreesOperator {
-	return &cacheZoneTrees{
-		mu: sync.RWMutex{},
-		m:  make(map[string]*zoneTree),
+func NewZoneTrees() ZoneTreesOperator {
+	return &cacheZoneTrees{m: cmap.New()}
+}
+
+func (zTree *cacheZoneTrees) CacheLen() int{
+	return zTree.m.Count()
+}
+
+func (zTree *cacheZoneTrees) Create(name string){
+	dValue := &domainWithValue{node: new(domaintree.Node)}
+	zTree.m.Set(name, dValue)
+}
+
+func (zTree *cacheZoneTrees) Delete(name string){
+	zTree.Delete(name)
+}
+
+func (zTree *cacheZoneTrees) CreateWithZones(name string, zones []string){
+	Value := &domainWithValue{node: new(domaintree.Node)}
+	for _, zone := range zones{
+		Value.Insert(&DomainContent{Domain: zone, Value: none})
 	}
+	zTree.m.Set(name, Value)
 }
 
-func (s *cacheZoneTrees) Create(name string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.m[name] = newZTree()
-}
-
-func (s *cacheZoneTrees) Delete(name string) {
-	s.mu.Lock()
-	delete(s.m, name)
-	s.mu.Unlock()
-	return
-}
-
-func (s *cacheZoneTrees) CreateWithZones(name string, zones []string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.m[name] = newZTree()
-	s.m[name].InsertWithSlice(zones)
-}
-
-func (s *cacheZoneTrees) UpdateZones(name string, zones []string) bool {
-	if !s.IsExist(name) {
+func (zTree *cacheZoneTrees) UpdateZones(name string, zones []string) bool{
+	oldValue, isExist := zTree.m.Get(name)
+	if !isExist{
 		return false
 	}
+	v, ok := oldValue.(*domainWithValue)
+	if !ok{
+		return false
+	}
+	v.Clear()
 
-	newTree := newZTree()
-	newTree.InsertWithSlice(zones)
-
-	s.mu.Lock()
-	s.m[name] = newTree
-	s.mu.Unlock()
-
+	Value := &domainWithValue{node: new(domaintree.Node)}
+	for _, zone := range zones{
+		Value.Insert(&DomainContent{Domain: zone, Value: none})
+	}
+	zTree.m.Set(name, Value)
 	return true
 }
 
-func (s *cacheZoneTrees) InsertZones(name string, zones []string) bool {
-	if !s.IsExist(name) {
+func (zTree *cacheZoneTrees) IsDomainExist(name, domain string) (interface{}, bool){
+	oldValue, isExist := zTree.m.Get(name)
+	if !isExist{
+		return nil, false
+	}
+	v, ok := oldValue.(*domainWithValue)
+	if !ok{
+		return nil, false
+	}
+
+	return v.Get(domain)
+}
+
+func (zTree *cacheZoneTrees) InsertZoneWithValue(name string, value *DomainContent) bool{
+	oldValue, isExist := zTree.m.Get(name)
+	if !isExist{
 		return false
 	}
 
-	s.mu.Lock()
-	s.m[name].InsertWithSlice(zones)
-	s.mu.Unlock()
+	v, ok := oldValue.(*domainWithValue)
+	if !ok{
+		return false
+	}
 
+	v.Insert(value)
 	return true
 }
 
-func (s *cacheZoneTrees) IsDomainExist(name string, domain string) bool {
-	if !s.IsExist(name) {
+func (zTree *cacheZoneTrees) DeleteZone(name string, zone string) bool{
+	oldValue, isExist := zTree.m.Get(name)
+	if !isExist{
 		return false
 	}
 
-	return s.m[name].Search(domain)
+	v, ok := oldValue.(*domainWithValue)
+	if !ok{
+		return false
+	}
+
+	v.Delete(zone)
+	return true
 }
 
-func (s *cacheZoneTrees) CacheLen() int {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	return len(s.m)
+func (zTree *cacheZoneTrees) IsExist(name string) bool{
+	return zTree.m.Has(name)
 }
 
-func (s *cacheZoneTrees) IsExist(name string) bool {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
 
-	_, ok := s.m[name]
-	return ok
-}
+
+
+
+
+
+
+
+
+
+
