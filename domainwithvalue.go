@@ -25,7 +25,7 @@ func (dv *domainWithValue) Insert(content *DomainContent) {
 		return
 	}
 	name, err := domain.MakeNameFromString(content.Domain)
-	if err != nil {
+	if err == nil {
 		dv.node.InplaceInsert(name, content.Value)
 	}
 }
@@ -37,7 +37,7 @@ func (dv *domainWithValue) Delete(contentDomain string) {
 		return
 	}
 	name, err := domain.MakeNameFromString(contentDomain)
-	if err != nil {
+	if err == nil {
 		newNode, success := dv.node.DeleteSubdomains(name)
 		if success {
 			dv.node = newNode
@@ -50,7 +50,7 @@ func (dv *domainWithValue) Get(content string) (interface{}, bool) {
 		return dv.rootValue, true
 	}
 	name, err := domain.MakeNameFromString(content)
-	if err != nil {
+	if err == nil {
 		return dv.node.Get(name)
 	}
 
