@@ -55,7 +55,7 @@ func (zTree *cacheZoneTrees) Create(name string){
 }
 
 func (zTree *cacheZoneTrees) Delete(name string){
-	zTree.Delete(name)
+	zTree.m.Remove(name)
 }
 
 func (zTree *cacheZoneTrees) CreateWithZones(name string, zones []string){
