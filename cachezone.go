@@ -3,6 +3,7 @@ package fwcache
 import (
 	"github.com/infobloxopen/go-trees/domaintree"
 	"github.com/orcaman/concurrent-map"
+	"strings"
 )
 
 var none = struct{}{}
@@ -61,7 +62,7 @@ func (zTree *cacheZoneTrees) Delete(name string){
 func (zTree *cacheZoneTrees) CreateWithZones(name string, zones []string){
 	Value := &domainWithValue{node: new(domaintree.Node)}
 	for _, zone := range zones{
-		Value.Insert(&DomainContent{Domain: zone, Value: none})
+		Value.Insert(&DomainContent{Domain: trimPrefixAsterisk(zone), Value: none})
 	}
 	zTree.m.Set(name, Value)
 }
@@ -79,7 +80,7 @@ func (zTree *cacheZoneTrees) UpdateZones(name string, zones []string) bool{
 
 	Value := &domainWithValue{node: new(domaintree.Node)}
 	for _, zone := range zones{
-		Value.Insert(&DomainContent{Domain: zone, Value: none})
+		Value.Insert(&DomainContent{Domain: trimPrefixAsterisk(zone), Value: none})
 	}
 	zTree.m.Set(name, Value)
 	return true
@@ -130,6 +131,14 @@ func (zTree *cacheZoneTrees) DeleteZone(name string, zone string) bool{
 
 func (zTree *cacheZoneTrees) IsExist(name string) bool{
 	return zTree.m.Has(name)
+}
+
+func trimPrefixAsterisk(zone string) string{
+	if zone == "*." || zone == "."{
+		return zone
+	}else{
+		return strings.TrimPrefix(zone, "*.")
+	}
 }
 
 
